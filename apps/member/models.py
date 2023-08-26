@@ -1,9 +1,10 @@
 from django.db import models
-from apps.base import BaseModel
+from django.utils import timezone
+
 from apps.role.models import Role
 
 
-class Member(BaseModel):
+class Member(models.Model):
     # 해당 회원의 UID(Firebase uid) (PK)
     id = models.CharField(max_length=28, primary_key=True)
 
@@ -18,3 +19,6 @@ class Member(BaseModel):
 
     # 회원의 활동 상태
     status = models.BooleanField(default=True)
+
+    created_date = models.DateTimeField(default=timezone.now)
+    modified_date = models.DateTimeField(default=timezone.now)

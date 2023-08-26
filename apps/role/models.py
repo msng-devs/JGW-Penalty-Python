@@ -1,8 +1,7 @@
 from django.db import models
-from apps.base import BaseModel
 
 
-class Role(BaseModel):
+class Role(models.Model):
     # 해당 권한의 ID(PK)
     id = models.AutoField(primary_key=True)
 

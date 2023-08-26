@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from django.core.validators import MinValueValidator
+
 from rest_framework import serializers
 
 from apps.member.models import Member
@@ -6,7 +10,7 @@ from apps.penalty.models import Penalty
 
 class AbstractPenaltyRequestSerializer(serializers.ModelSerializer):
     target_member_id = serializers.CharField(
-        source="id",
+        source="target_member.id",
         max_length=28,
         min_length=28,
         error_messages={
@@ -45,17 +49,17 @@ class PenaltyAddRequestSerializer(AbstractPenaltyRequestSerializer):
         fields = AbstractPenaltyRequestSerializer.Meta.fields + ["reason", "type"]
 
     def create(self, validated_data):
-        penalties = []
-        for data in validated_data:
-            member, created = Member.objects.get_or_create(uid=data["target_member_id"])
-            penalty = Penalty.objects.create(
-                reason=data["reason"], target_member=member, type=data["type"]
-            )
-            penalties.append(penalty)
-        return penalties
+        target_member_id = validated_data.get("target_member").get("id")
+        member = Member.objects.get(id=target_member_id)
+        penalty = Penalty.objects.create(
+            reason=validated_data.get("reason"),
+            target_member=member,
+            type=validated_data.get("type"),
+        )
+        return penalty
 
 
-class PenaltyBulkDeleteRequestSerializer(AbstractPenaltyRequestSerializer):
+class PenaltyBulkDeleteRequestSerializer(serializers.ModelSerializer):
     penalty_ids = serializers.ListField(
         child=serializers.IntegerField(),
         error_messages={"required": "Penalty_ids가 비워져있습니다!"},
@@ -71,11 +75,35 @@ class PenaltyBulkDeleteRequestSerializer(AbstractPenaltyRequestSerializer):
     def delete(self):
         Penalty.objects.filter(id__in=self.validated_data["penalty_ids"]).delete()
 
+    class Meta:
+        model = Penalty
+        fields = ["penalty_ids"]
 
-class PenaltyUpdateRequestSerializer(AbstractPenaltyRequestSerializer):
+
+class PenaltyBulkUpdateRequestSerializer(serializers.ListSerializer):
+    def update(self, instance, validated_data):
+        # ID별로 Penalty 객체 저장
+        penalty_mapping = {penalty.id: penalty for penalty in instance}
+
+        # ID로 전달된 데이터 저장
+        data_mapping = {item["id"]: item for item in validated_data}
+
+        # 업데이트할 Penalty 객체 리스트
+        updated_penalties = []
+
+        for penalty_id, data in data_mapping.items():
+            penalty = penalty_mapping.get(penalty_id, None)
+            if penalty:
+                updated_penalties.append(self.child.update(penalty, data))
+
+        return updated_penalties
+
+
+class PenaltyUpdateRequestSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(
-        validators=[serializers.validators.MinValueValidator(1)],
+        validators=[MinValueValidator(1)],
         error_messages={"required": "id가 비워져 있습니다!", "min_value": "id의 형식이 잘못되었습니다!"},
+        required=False,
     )
     reason = serializers.CharField(
         max_length=255,
@@ -87,27 +115,27 @@ class PenaltyUpdateRequestSerializer(AbstractPenaltyRequestSerializer):
     type = serializers.BooleanField(error_messages={"null": "패널티의 종류가 누락되어있습니다!"})
 
     class Meta(AbstractPenaltyRequestSerializer.Meta):
-        fields = AbstractPenaltyRequestSerializer.Meta.fields + ["id", "reason", "type"]
+        model = Penalty
+        fields = ["id", "reason", "type"]
+        list_serializer_class = PenaltyBulkUpdateRequestSerializer
 
 
-class PenaltyIdSerializer(AbstractPenaltyRequestSerializer):
-    penalty_id = serializers.IntegerField()
+class PenaltyIdSerializer(serializers.ModelSerializer):
+    penalty_id = serializers.IntegerField(source="id")
+
+    class Meta:
+        model = Penalty
+        fields = ["penalty_id"]
 
 
 class PenaltyResponseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     target_member_id = serializers.CharField(source="target_member.id")
     target_member_name = serializers.CharField(source="target_member.name")
-    modified_by = serializers.CharField(source="modifiedBy")
+    # modified_by = serializers.CharField(source="modifiedBy")
     type = serializers.BooleanField()
     reason = serializers.CharField()
-    modified_date_time = serializers.DateTimeField(
-        format="%Y-%m-%d %H:%M:%S", source="modifiedDateTime"
-    )
-    created_by = serializers.CharField(source="createdBy")
-    created_date_time = serializers.DateTimeField(
-        format="%Y-%m-%d %H:%M:%S", source="createdDateTime"
-    )
+    # created_by = serializers.CharField(source="createdBy")
 
     class Meta:
         model = Penalty
@@ -115,10 +143,10 @@ class PenaltyResponseSerializer(serializers.ModelSerializer):
             "id",
             "target_member_id",
             "target_member_name",
-            "modified_by",
+            # "modified_by",
             "type",
             "reason",
-            "modified_date_time",
-            "created_by",
-            "created_date_time",
+            # "created_by",
+            "created_date",
+            "modified_date",
         ]
