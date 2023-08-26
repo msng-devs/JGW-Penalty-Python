@@ -144,6 +144,7 @@ class PenaltyApiTest(TestCase):
         # then
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIsNotNone(response.json())
+        self.assertEqual(response.json()["code"], "PM-AUTH-001")
 
     def test_get_penalty_all_with_admin_no_self(self):
         # given
@@ -239,6 +240,7 @@ class PenaltyApiTest(TestCase):
         # then
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIsNotNone(response.json())
+        self.assertEqual(response.json()["code"], "PM-AUTH-001")
 
     def test_delete_penalty(self):
         # given
