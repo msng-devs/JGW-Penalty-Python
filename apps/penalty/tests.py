@@ -1,5 +1,6 @@
 import uuid
 import json
+import logging
 
 from django.test import TestCase
 from django.urls import reverse
@@ -23,6 +24,9 @@ class PenaltyApiTest(TestCase):
         ]
 
     def setUp(self):
+        # 테스트케이스 단계에서 로그가 쌓이는지 확인하기 위해 로깅 레벨을 설정
+        logging.disable(logging.NOTSET)
+
         self.client = APIClient()
         self.penalty_data = {}
 
@@ -355,4 +359,5 @@ class PenaltyApiTest(TestCase):
         self.assertIn("new penalty 2 reason", updated_reasons)
 
     def tearDown(self):
-        pass
+        # 로그 레벨을 다시 원래대로 돌려놓음
+        logging.disable(logging.CRITICAL)

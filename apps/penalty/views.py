@@ -1,3 +1,5 @@
+import logging
+
 from django.utils.six import text_type
 from django.core.paginator import Paginator
 
@@ -15,6 +17,8 @@ from apps.serializers import (
     PenaltyResponseSerializer,
     PenaltyUpdateRequestSerializer,
 )
+
+logger = logging.getLogger("django")
 
 
 def get_auth_header(request):
@@ -52,7 +56,12 @@ class AddPenalty(APIView):
                 target_member_id=str(serializer.data[0]["target_member_id"]),
                 role_id=role_id,
             )
-            serializer.save()
+            penalties = serializer.save()
+
+            for penalty in penalties:
+                message = f"User {uid} added penalty with ID {penalty.id}"
+                logger.info(message)
+
             return Response(
                 {"message": f"총 ({len(serializer.data)})개의 Penalty를 성공적으로 추가했습니다!"},
                 status=status.HTTP_201_CREATED,
@@ -80,32 +89,38 @@ class PenaltyDetail(APIView):
     def delete(self, request, penaltyId):
         uid, role_id = get_auth_header(request)
 
-        penalty = Penalty.objects.get(id=penaltyId)
-        penalty.delete()
-        serializer = PenaltyIdSerializer({"id": penaltyId})
-
         # request를 보낸 유저의 권한 확인
         check_permission(
             uid=uid,
             role_id=role_id,
         )
+
+        penalty = Penalty.objects.get(id=penaltyId)
+        penalty.delete()
+        serializer = PenaltyIdSerializer({"id": penaltyId})
+
+        message = f"User {uid} deleted penalty with id {penaltyId}"
+        logger.info(message)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, penaltyId):
         uid, role_id = get_auth_header(request)
 
-        penalty = Penalty.objects.get(id=penaltyId)
-        serializer = PenaltyUpdateRequestSerializer(penalty, data=request.data)
-
         # request를 보낸 유저의 권한 확인
         check_permission(
             uid=uid,
             role_id=role_id,
         )
 
+        penalty = Penalty.objects.get(id=penaltyId)
+        serializer = PenaltyUpdateRequestSerializer(penalty, data=request.data)
+
         if serializer.is_valid():
             serializer.save(uid=uid)
+            message = f"User {uid} updated penalty with id {penaltyId}"
+            logger.info(message)
+
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -150,15 +165,23 @@ class PenaltyList(APIView):
     def delete(self, request):
         uid, role_id = get_auth_header(request)
 
-        serializer = PenaltyBulkDeleteRequestSerializer(data=request.data)
-
         # request를 보낸 유저의 권한 확인
         check_permission(
             uid=uid,
             role_id=role_id,
         )
 
+        serializer = PenaltyBulkDeleteRequestSerializer(data=request.data)
+
         if serializer.is_valid():
+            penalties_to_delete = Penalty.objects.filter(
+                id__in=serializer.validated_data["penalty_ids"]
+            )
+
+            for penalty in penalties_to_delete:
+                message = f"User {uid} deleted penalty with ID {penalty.id}"
+                logger.info(message)
+
             serializer.delete()
 
             return Response(
@@ -173,22 +196,25 @@ class PenaltyList(APIView):
     def put(self, request):
         uid, role_id = get_auth_header(request)
 
-        # many = True 일 시, PenaltyBulkUpdateRequestSerializer의 update 메서드가 호출됨
-        serializer = PenaltyUpdateRequestSerializer(data=request.data, many=True)
-
         # request를 보낸 유저의 권한 확인
         check_permission(
             uid=uid,
             role_id=role_id,
         )
 
+        # many = True 일 시, PenaltyBulkUpdateRequestSerializer의 update 메서드가 호출됨
+        serializer = PenaltyUpdateRequestSerializer(data=request.data, many=True)
+
         if serializer.is_valid():
-            serializer.update(
-                Penalty.objects.filter(
-                    id__in=[item["id"] for item in serializer.validated_data]
-                ),
-                serializer.validated_data,
+            updated_penalties = Penalty.objects.filter(
+                id__in=[item["id"] for item in serializer.validated_data]
             )
+
+            serializer.update(updated_penalties, serializer.validated_data)
+
+            for penalty in updated_penalties:
+                message = f"User {uid} updated penalty with ID {penalty.id}"
+                logger.info(message)
 
             return Response(
                 {
