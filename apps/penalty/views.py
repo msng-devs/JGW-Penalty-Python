@@ -44,6 +44,17 @@ def check_permission(uid, role_id, target_member_id=None):
 
 
 class AddPenalty(APIView):
+    """
+    신규 Penalty 추가
+
+    ---
+    RBAC - 4(어드민)
+
+    해당 API를 통해 신규 Penalty를 추가할 수 있습니다.
+
+    * @author 이준혁(39기) bbbong9@gmail.com
+    """
+
     def post(self, request):
         uid, role_id = get_auth_header(request)
 
@@ -71,6 +82,15 @@ class AddPenalty(APIView):
 
 
 class PenaltyDetail(APIView):
+    """
+    Penalty API
+
+    ---
+    Penalty를 조회하고, 삭제하고, 수정하는 API를 제공합니다.
+
+    * @author 이준혁(39기) bbbong9@gmail.com
+    """
+
     def get(self, request, penaltyId):
         uid, role_id = get_auth_header(request)
 
@@ -127,6 +147,15 @@ class PenaltyDetail(APIView):
 
 
 class PenaltyList(APIView):
+    """
+    Penalty API
+
+    ---
+    penalty를 등록
+
+    * @author 이준혁(39기) bbbong9@gmail.com
+    """
+
     def get(self, request):
         uid, role_id = get_auth_header(request)
 
