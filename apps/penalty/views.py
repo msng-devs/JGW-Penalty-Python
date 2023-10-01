@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import status, HTTP_HEADER_ENCODING
 
-from apps.role.models import Role
+from apps.common.models import Role
 from apps.penalty.models import Penalty
 from apps.serializers import (
     PenaltyAddRequestSerializer,

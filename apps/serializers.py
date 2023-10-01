@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator
 
 from rest_framework import serializers
 
-from apps.member.models import Member
+from apps.common.models import Member
 from apps.penalty.models import Penalty
 
 

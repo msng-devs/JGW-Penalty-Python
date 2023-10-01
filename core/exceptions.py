@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -7,7 +9,6 @@ from rest_framework.exceptions import (
     PermissionDenied,
     NotAuthenticated,
 )
-import datetime
 
 
 def _check_error_code(exc):

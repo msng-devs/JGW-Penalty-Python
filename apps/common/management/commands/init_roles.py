@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from apps.role.models import Role
+from apps.common.models import Role
 
 
 class Command(BaseCommand):

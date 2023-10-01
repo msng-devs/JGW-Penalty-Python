@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from apps.member.models import Member
+from apps.common.models import Member
 
 
 # Object의 생성 및 수정에 대한 기본적인 정보를 담은 추상 클래스

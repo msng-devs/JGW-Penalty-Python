@@ -7,8 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.role.models import Role
-from apps.member.models import Member
+from apps.common.models import Role, Member
 from apps.penalty.models import Penalty
 
 
