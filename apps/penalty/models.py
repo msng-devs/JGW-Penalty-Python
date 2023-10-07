@@ -1,3 +1,8 @@
+# --------------------------------------------------------------------------
+# Penalty Application의 Models를 정의한 모듈입니다.
+#
+# @author 이준혁(39기) bbbong9@gmail.com
+# --------------------------------------------------------------------------
 from django.db import models
 from django.utils import timezone
 
