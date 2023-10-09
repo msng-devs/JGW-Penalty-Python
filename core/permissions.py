@@ -7,7 +7,7 @@ from django.utils.six import text_type
 
 from rest_framework import HTTP_HEADER_ENCODING
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission
 
 from apps.common.models import Role
 
@@ -48,10 +48,6 @@ class IsAdminOrSelf(BasePermission):
     message = "이 작업을 수행할 권한이 없습니다."
 
     def has_permission(self, request, view):
-        # GET, HEAD, OPTIONS 요청에 대한 접근을 허용
-        if request.method in SAFE_METHODS:
-            return True
-
         uid, role_id = get_auth_header(request)
 
         # uid와 role_id가 헤더에 포함되어 있는지 확인
@@ -65,9 +61,14 @@ class IsAdminOrSelf(BasePermission):
         request.uid = uid
         request.role_id = role_id
 
-        target_member_id = view.kwargs.get(
-            "member_id", None
-        )  # URL에서 member_id 파라미터를 가져옵니다.
+        target_member_id = request.query_params.get('targetMember', None)
+
+        penalty_id = view.kwargs.get('penaltyId', None)
+
+        if request.method == "GET" and penalty_id:
+            penalty = view.get_object()
+            if uid == penalty.target_member_id:
+                return True
 
         return self.check_permission(uid, role_id, target_member_id)
 

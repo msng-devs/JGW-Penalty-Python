@@ -52,6 +52,7 @@ class PenaltyApiTest(TestCase):
         self.test_role_id = 4
 
         self.another_member_uid = self.members[-1].id
+        self.another_role_id = 3
 
         self.penalty_data = [
             {
@@ -210,11 +211,6 @@ class PenaltyApiTest(TestCase):
 
     def test_get_penalty_all_with_no_admin_self(self):
         # given
-        # self.__add_penalty(target_member_uid=self.members[0].id)
-        # self.__add_penalty(
-        #     target_member_uid=self.members[1].id, reason="another penalty detail"
-        # )
-        # self.__add_penalty(target_member_uid=self.members[1].id, reason="hehe")
         penalty_data = [
             {
                 "target_member_id": self.another_member_uid,
@@ -245,12 +241,14 @@ class PenaltyApiTest(TestCase):
 
     def test_get_penalty_all_with_no_admin_with_auth_error(self):
         # given
-        # self.__add_penalty(target_member_uid=self.members[1].id, reason="hehe")
-        self.client = TestUtils.add_header(self.client, self.another_member_uid, 3)
-
-        # when
         penalty_url = reverse("penalty_list")
 
+        # when
+        self.client = TestUtils.add_header(
+            client=self.client, uid=self.another_member_uid, role_id=3
+        )
+
+        # print(self.client.credentials())
         response = self.client.get(
             penalty_url,
             content_type="application/json",
@@ -395,8 +393,8 @@ class PenaltyApiTest(TestCase):
         self.assertEqual(check_response.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(check_response.json())
 
-        self.assertIn("new penalty 1 reason", response.json()[0].get('reason'))
-        self.assertIn("new penalty 2 reason", response.json()[1].get('reason'))
+        self.assertIn("new penalty 1 reason", response.json()[0].get("reason"))
+        self.assertIn("new penalty 2 reason", response.json()[1].get("reason"))
 
     def tearDown(self):
         # 로그 레벨을 다시 원래대로 돌려놓음

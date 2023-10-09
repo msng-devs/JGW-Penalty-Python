@@ -9,6 +9,7 @@ import logging
 from rest_framework import generics, mixins
 
 from core import permissions
+from core.permissions import IsAdminOrSelf
 
 from . import mixins as penalty_mixins
 
@@ -39,7 +40,7 @@ class PenaltyDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Penalty.objects.all()
     lookup_field = "id"
     lookup_url_kwarg = "penaltyId"
-    permission_classes = [permissions.IsAdminOrSelf]
+    permission_classes = [IsAdminOrSelf]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -73,11 +74,7 @@ class PenaltyList(
     queryset = Penalty.objects.all().order_by("-id")
     pagination_class = CustomBasePagination
     filterset_class = filters.PenaltyFilter
-
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return [permissions.IsProbationaryMember()]
-        return [permissions.IsAdminOrSelf()]
+    permission_classes = [IsAdminOrSelf]
 
     def get_serializer_class(self):
         if self.request.method == "DELETE":
