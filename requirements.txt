@@ -15,7 +15,6 @@ Django==4.2.3
 django-filter==23.3
 django-utils-six==2.0
 djangorestframework==3.14.0
-drf-yasg==1.21.7
 executing==1.2.0
 flex==6.14.1
 idna==3.4

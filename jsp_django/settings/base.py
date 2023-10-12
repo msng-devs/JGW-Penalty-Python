@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "apps.common",
     "apps.penalty",
     "rest_framework",
-    "drf_yasg",
 ]
 
 MIDDLEWARE = [
