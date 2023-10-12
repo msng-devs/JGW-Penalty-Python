@@ -61,9 +61,9 @@ class IsAdminOrSelf(BasePermission):
         request.uid = uid
         request.role_id = role_id
 
-        target_member_id = request.query_params.get('targetMember', None)
+        target_member_id = request.query_params.get("targetMember", None)
 
-        penalty_id = view.kwargs.get('penaltyId', None)
+        penalty_id = view.kwargs.get("penaltyId", None)
 
         if request.method == "GET" and penalty_id:
             penalty = view.get_object()

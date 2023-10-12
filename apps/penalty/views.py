@@ -1,4 +1,3 @@
-# TODO: permission 관련 수정 필요.
 # --------------------------------------------------------------------------
 # Penalty Application의 Views를 정의한 모듈입니다.
 #
@@ -11,8 +10,6 @@ from rest_framework import generics, mixins
 from core import permissions
 from core.permissions import IsAdminOrSelf
 
-from . import mixins as penalty_mixins
-
 from apps.penalty.models import Penalty
 from apps.serializers import (
     PenaltyAddRequestSerializer,
@@ -21,8 +18,11 @@ from apps.serializers import (
     PenaltyResponseSerializer,
     PenaltyUpdateRequestSerializer,
 )
-from apps.utils import filters
+from apps.utils import filters, decorators
+from apps.utils import documentation as docs
 from apps.utils.paginations import CustomBasePagination
+
+from . import mixins as penalty_mixins
 
 logger = logging.getLogger("django")
 
@@ -63,6 +63,38 @@ class PenaltyDetail(generics.RetrieveUpdateDestroyAPIView):
         message = f"User {uid} updated penalty with id {serializer.instance.id}"
         logger.info(message)
 
+    @decorators.methods_swagger_decorator
+    def get(self, request, *args, **kwargs):
+        """
+        단일 penalty를 조회
+
+        ---
+        RBAC - 2 이상
+        """
+        return self.retrieve(request, *args, **kwargs)
+
+    @decorators.methods_swagger_decorator
+    def put(self, request, *args, **kwargs):
+        """
+        단일 penalty를 업데이트
+
+        ---
+        RBAC - 4(어드민)
+
+        부분 업데이트를 지원합니다.
+        """
+        return self.update(request, *args, **kwargs, partial=True)
+
+    @decorators.methods_swagger_decorator
+    def delete(self, request, *args, **kwargs):
+        """
+        단일 penalty를 제거
+
+        ---
+        RBAC - 4(어드민)
+        """
+        return self.destroy(request, *args, **kwargs)
+
 
 class PenaltyList(
     mixins.ListModelMixin,
@@ -71,6 +103,15 @@ class PenaltyList(
     penalty_mixins.UpdateMultiPenaltyMixin,
     generics.GenericAPIView,
 ):
+    """
+    Penalty API
+
+    ---
+    penalty를 등록
+
+    * @author 이준혁(39기) bbbong9@gmail.com
+    """
+
     queryset = Penalty.objects.all().order_by("-id")
     pagination_class = CustomBasePagination
     filterset_class = filters.PenaltyFilter
@@ -85,14 +126,41 @@ class PenaltyList(
             return PenaltyAddRequestSerializer
         return PenaltyResponseSerializer
 
+    @decorators.common_swagger_decorator
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
+    @decorators.methods_swagger_decorator
     def post(self, request, *args, **kwargs):
+        """
+        penalty를 등록
+
+        ---
+        RBAC - 4(어드민)
+        """
         return self.create(request, *args, **kwargs)
 
+    @decorators.methods_swagger_decorator
     def put(self, request, *args, **kwargs):
+        """
+        다수 penalty를 업데이트
+
+        ---
+        RBAC - 4(어드민)
+
+        부분 업데이트를 지원합니다.
+        """
         return self.update(request, *args, **kwargs)
 
+    @decorators.methods_swagger_decorator
     def delete(self, request, *args, **kwargs):
+        """
+        다수 penalty를 제거
+
+        ---
+        RBAC - 4(어드민)
+        """
         return self.destroy(request, *args, **kwargs)
+
+
+PenaltyList.__doc__ = docs.get_penalty_doc()

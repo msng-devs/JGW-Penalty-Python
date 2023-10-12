@@ -31,7 +31,6 @@ class TestUtils:
             return (
                 response.json()[0]["id"]
                 if "id" in response.json()
-                # else list(response.json().values())[0]
                 else list(response.json())
             )
 

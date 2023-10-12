@@ -1,4 +1,3 @@
-# TODO: permission 관련 수정 필요.
 import uuid
 import json
 import logging
@@ -75,6 +74,33 @@ class PenaltyApiTest(TestCase):
             self.client, self.test_member_uid, self.test_role_id
         )
 
+        self.penalty_data = {
+            "target_member_id": self.test_member_uid,
+            "reason": "단일 penalty test",
+            "type": True,
+        }
+
+        # when
+        response = self.client.post(
+            penalty_url,
+            data=json.dumps(self.penalty_data),
+            content_type="application/json",
+        )
+
+        # then
+        response_data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response_data.get("reason"), "단일 penalty test")
+
+    def test_add_multiple_penalty(self):
+        penalty_url = reverse("penalty_list")
+
+        # given
+        self.client = TestUtils.add_header(
+            self.client, self.test_member_uid, self.test_role_id
+        )
+
         self.penalty_data = [
             {"target_member_id": self.test_member_uid, "reason": "test", "type": True},
             {"target_member_id": self.test_member_uid, "reason": "test", "type": True},
@@ -89,7 +115,6 @@ class PenaltyApiTest(TestCase):
 
         # then
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # self.assertEqual(response.json()["message"], "총 (2)개의 Penalty를 성공적으로 추가했습니다!")
         self.assertEqual(len(response.json()), 2)
 
     def test_get_penalty_by_id_with_admin(self):
@@ -248,7 +273,6 @@ class PenaltyApiTest(TestCase):
             client=self.client, uid=self.another_member_uid, role_id=3
         )
 
-        # print(self.client.credentials())
         response = self.client.get(
             penalty_url,
             content_type="application/json",
@@ -261,7 +285,6 @@ class PenaltyApiTest(TestCase):
 
     def test_delete_penalty(self):
         # given
-        # penalty_id = self.__add_penalty(target_member_uid=self.members[0].id)
         self.client = TestUtils.add_header(
             self.client, self.test_member_uid, self.test_role_id
         )
@@ -317,7 +340,6 @@ class PenaltyApiTest(TestCase):
 
     def test_update_penalty(self):
         # given
-        # penalty_id = self.__add_penalty(target_member_uid=self.members[0].id)
         self.client = TestUtils.add_header(
             self.client, self.test_member_uid, self.test_role_id
         )
@@ -337,6 +359,7 @@ class PenaltyApiTest(TestCase):
         # then
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(response.json())
+        self.assertEqual(response.json()["id"], self.penalty_id)
         self.assertEqual(response.json()["reason"], "modified penalty reason")
 
     def test_update_penalty_all(self):
@@ -384,7 +407,6 @@ class PenaltyApiTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(response.json())
         self.assertEqual(len(response.json()), 2)
-        # self.assertEqual(response.data["message"], "총 (2)개의 Penalty를 성공적으로 업데이트 했습니다!")
 
         check_response = self.client.get(
             penalty_url,

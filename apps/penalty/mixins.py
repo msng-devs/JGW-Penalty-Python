@@ -14,21 +14,27 @@ logger = logging.getLogger("django")
 
 
 class CreateMultiPenaltyMixin(mixins.CreateModelMixin):
-    # TODO: 단일 penalty 추가할 때, request body type가 list 혹은 단일인지 구분하는 로직 추가
+    """PenaltyList의 POST 메서드에 사용되는 Mixin.
+
+    단일(dict), 다중(list) request 모두 수용하기 위해 is_many 라는 변수를 사용했습니다.
+    """
+
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, many=True)
+        is_many = isinstance(request.data, list)
+        serializer = self.get_serializer(data=request.data, many=is_many)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        # message = {"message": f"총 ({len(serializer.data)})개의 Penalty를 성공적으로 추가했습니다!"}
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def perform_create(self, serializer):
-        # print("create performed")
-        # print(serializer.validated_data)
         penalties = serializer.save()
+
+        if not isinstance(penalties, list):
+            penalties = [penalties]
+
         for penalty in penalties:
             message = (
                 f"User {penalty.target_member_id} added penalty with ID {penalty.id}"
@@ -37,6 +43,8 @@ class CreateMultiPenaltyMixin(mixins.CreateModelMixin):
 
 
 class DestroyMultiPenaltyMixin(mixins.DestroyModelMixin):
+    """PenaltyList의 DELETE 메서드에 사용되는 Mixin."""
+
     def destroy(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -52,6 +60,11 @@ class DestroyMultiPenaltyMixin(mixins.DestroyModelMixin):
 
 
 class UpdateMultiPenaltyMixin(mixins.UpdateModelMixin):
+    """PenaltyList의 UPDATE 메서드에 사용되는 Mixin.
+
+    단일(dict), 다중(list) request 모두 수용하기 위해 is_many 라는 변수를 사용했습니다.
+    """
+
     def update(self, request, *args, **kwargs):
         is_many = isinstance(request.data, list)
         instances = self.get_objects(request.data if is_many else [request.data])
@@ -62,14 +75,11 @@ class UpdateMultiPenaltyMixin(mixins.UpdateModelMixin):
         self.perform_update(serializer)
 
         return Response(
-            # {"message": f"총 ({len(serializer.data)})개의 Penalty를 성공적으로 업데이트 했습니다!"},
             serializer.data,
             status=status.HTTP_200_OK,
         )
 
     def get_objects(self, request_data):
-        # Extract IDs from the request data
         ids = [item.get("id") for item in request_data]
 
-        # Fetch Penalty objects based on the given IDs
         return Penalty.objects.filter(id__in=ids)

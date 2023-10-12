@@ -87,21 +87,6 @@ class PenaltyBulkDeleteRequestSerializer(serializers.ModelSerializer):
 
 class PenaltyBulkUpdateRequestSerializer(serializers.ListSerializer):
     def update(self, instance, validated_data):
-        # # ID별로 Penalty 객체 저장
-        # penalty_mapping = {penalty.id: penalty for penalty in instance}
-
-        # # ID로 전달된 데이터 저장
-        # data_mapping = {item["id"]: item for item in validated_data}
-
-        # # 업데이트할 Penalty 객체 리스트
-        # updated_penalties = []
-
-        # for penalty_id, data in data_mapping.items():
-        #     penalty = penalty_mapping.get(penalty_id, None)
-        #     if penalty:
-        #         updated_penalties.append(self.child.update(penalty, data))
-
-        # return updated_penalties
         updated_instances = []
         for obj_data in validated_data:
             obj = next((item for item in instance if item.id == obj_data["id"]), None)
@@ -146,10 +131,8 @@ class PenaltyResponseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     target_member_id = serializers.CharField(source="target_member.id")
     target_member_name = serializers.CharField(source="target_member.name")
-    # modified_by = serializers.CharField(source="modifiedBy")
     type = serializers.BooleanField()
     reason = serializers.CharField()
-    # created_by = serializers.CharField(source="createdBy")
 
     class Meta:
         model = Penalty
@@ -157,10 +140,8 @@ class PenaltyResponseSerializer(serializers.ModelSerializer):
             "id",
             "target_member_id",
             "target_member_name",
-            # "modified_by",
             "type",
             "reason",
-            # "created_by",
             "created_date",
             "modified_date",
         ]
