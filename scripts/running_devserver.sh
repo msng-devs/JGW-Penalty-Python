@@ -1,0 +1,1 @@
+python manage.py runserver --settings=jsp_django.settings.settings_dev

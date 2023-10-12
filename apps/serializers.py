@@ -1,10 +1,15 @@
+# --------------------------------------------------------------------------
+# Penalty Application의 Serializer를 정의한 모듈입니다.
+#
+# @author 이준혁(39기) bbbong9@gmail.com
+# --------------------------------------------------------------------------
 from __future__ import annotations
 
 from django.core.validators import MinValueValidator
 
 from rest_framework import serializers
 
-from apps.member.models import Member
+from apps.common.models import Member
 from apps.penalty.models import Penalty
 
 
@@ -46,7 +51,7 @@ class PenaltyAddRequestSerializer(AbstractPenaltyRequestSerializer):
     type = serializers.BooleanField(error_messages={"null": "패널티의 종류가 누락되어있습니다!"})
 
     class Meta(AbstractPenaltyRequestSerializer.Meta):
-        fields = AbstractPenaltyRequestSerializer.Meta.fields + ["reason", "type"]
+        fields = AbstractPenaltyRequestSerializer.Meta.fields + ["id", "reason", "type"]
 
     def create(self, validated_data):
         target_member_id = validated_data.get("target_member").get("id")
@@ -82,21 +87,15 @@ class PenaltyBulkDeleteRequestSerializer(serializers.ModelSerializer):
 
 class PenaltyBulkUpdateRequestSerializer(serializers.ListSerializer):
     def update(self, instance, validated_data):
-        # ID별로 Penalty 객체 저장
-        penalty_mapping = {penalty.id: penalty for penalty in instance}
-
-        # ID로 전달된 데이터 저장
-        data_mapping = {item["id"]: item for item in validated_data}
-
-        # 업데이트할 Penalty 객체 리스트
-        updated_penalties = []
-
-        for penalty_id, data in data_mapping.items():
-            penalty = penalty_mapping.get(penalty_id, None)
-            if penalty:
-                updated_penalties.append(self.child.update(penalty, data))
-
-        return updated_penalties
+        updated_instances = []
+        for obj_data in validated_data:
+            obj = next((item for item in instance if item.id == obj_data["id"]), None)
+            if obj:
+                for attr, value in obj_data.items():
+                    setattr(obj, attr, value)
+                obj.save()
+                updated_instances.append(obj)
+        return updated_instances
 
 
 class PenaltyUpdateRequestSerializer(serializers.ModelSerializer):
@@ -132,10 +131,8 @@ class PenaltyResponseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     target_member_id = serializers.CharField(source="target_member.id")
     target_member_name = serializers.CharField(source="target_member.name")
-    # modified_by = serializers.CharField(source="modifiedBy")
     type = serializers.BooleanField()
     reason = serializers.CharField()
-    # created_by = serializers.CharField(source="createdBy")
 
     class Meta:
         model = Penalty
@@ -143,10 +140,8 @@ class PenaltyResponseSerializer(serializers.ModelSerializer):
             "id",
             "target_member_id",
             "target_member_name",
-            # "modified_by",
             "type",
             "reason",
-            # "created_by",
             "created_date",
             "modified_date",
         ]

@@ -1,7 +1,21 @@
+# --------------------------------------------------------------------------
+# 서비스에 사용되는 Base Models를 정의한 모듈입니다.
+#
+# :class Role: RBAC를 위해 사용되며, 권한을 정의합니다.
+# :class Member: RBAC를 위해 사용되며, 회원을 정의합니다.
+#
+# @author 이준혁(39기) bbbong9@gmail.com
+# --------------------------------------------------------------------------
 from django.db import models
 from django.utils import timezone
 
-from apps.role.models import Role
+
+class Role(models.Model):
+    # 해당 권한의 ID(PK)
+    id = models.AutoField(primary_key=True)
+
+    # 해당 권한의 명칭("ROLE_" 시작하는 대문자)
+    name = models.CharField(max_length=45, null=False, unique=True)
 
 
 class Member(models.Model):

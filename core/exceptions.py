@@ -1,3 +1,13 @@
+# --------------------------------------------------------------------------
+# 자람그룹웨어 서비스 규격에 맞는 Exception을 핸들링하는 모듈입니다.
+#
+# Attendance를 포함한 모든 자람그룹웨어 서비스는 다음과 같은 에러메시지 규격을 따릅니다.
+# -> XX(마이크로서비스 분류 코드, 2글자)-XXXX(에러타입)-001(에러코드번호)
+#
+# @author 이준혁(39기) bbbong9@gmail.com
+# --------------------------------------------------------------------------
+import datetime
+
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -6,8 +16,12 @@ from rest_framework.exceptions import (
     ValidationError,
     PermissionDenied,
     NotAuthenticated,
+    NotFound,
+    MethodNotAllowed,
+    NotAcceptable,
+    UnsupportedMediaType,
+    Throttled,
 )
-import datetime
 
 
 def _check_error_code(exc):
@@ -49,6 +63,17 @@ def _check_error_code(exc):
             error_code = "PM-DB-005"
         case BrokenPipeError():
             error_code = "PM-DB-006"
+        # HTTP ERRORS
+        case NotFound():
+            error_code = "PM-HTTP-001"
+        case MethodNotAllowed():
+            error_code = "PM-HTTP-002"
+        case NotAcceptable():
+            error_code = "PM-HTTP-003"
+        case UnsupportedMediaType():
+            error_code = "PM-HTTP-004"
+        case Throttled():
+            error_code = "PM-HTTP-005"
         case _:
             error_code = "PM-GEN-000"  # General error code as default
 

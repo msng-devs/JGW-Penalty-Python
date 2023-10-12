@@ -1,7 +1,13 @@
+# --------------------------------------------------------------------------
+# Penalty Application의 Models를 정의한 모듈입니다.
+#
+# @author 이준혁(39기) bbbong9@gmail.com
+# --------------------------------------------------------------------------
 from django.db import models
 from django.utils import timezone
 
 from apps.base import BaseModel
+from apps.common.models import Member
 
 
 class Penalty(BaseModel):
@@ -10,7 +16,7 @@ class Penalty(BaseModel):
 
     # 해당 패널티가 부여된 Member(Object)
     target_member = models.ForeignKey(
-        "member.Member", on_delete=models.CASCADE, null=False
+        Member, on_delete=models.CASCADE, related_name="penalty"
     )
 
     # 해당 패널티의 유형(false면 경고, true면 주의)
@@ -27,5 +33,5 @@ class Penalty(BaseModel):
         self.modified_date = timezone.now()
 
     class Meta:
-        db_table = "PENALTY"
+        db_table = "penalty"
         ordering = ["-created_date"]

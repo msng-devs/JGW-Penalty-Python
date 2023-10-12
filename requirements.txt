@@ -12,6 +12,7 @@ debugpy==1.6.7
 decorator==5.1.1
 dill==0.3.7
 Django==4.2.3
+django-filter==23.3
 django-utils-six==2.0
 djangorestframework==3.14.0
 drf-yasg==1.21.7
