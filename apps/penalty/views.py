@@ -18,9 +18,8 @@ from apps.serializers import (
     PenaltyResponseSerializer,
     PenaltyUpdateRequestSerializer,
 )
-from apps.utils import filters, decorators
-from apps.utils import documentation as docs
 from apps.utils.paginations import CustomBasePagination
+from apps.utils import filters
 
 from . import mixins as penalty_mixins
 
@@ -63,36 +62,13 @@ class PenaltyDetail(generics.RetrieveUpdateDestroyAPIView):
         message = f"User {uid} updated penalty with id {serializer.instance.id}"
         logger.info(message)
 
-    @decorators.methods_swagger_decorator
     def get(self, request, *args, **kwargs):
-        """
-        단일 penalty를 조회
-
-        ---
-        RBAC - 2 이상
-        """
         return self.retrieve(request, *args, **kwargs)
 
-    @decorators.methods_swagger_decorator
     def put(self, request, *args, **kwargs):
-        """
-        단일 penalty를 업데이트
-
-        ---
-        RBAC - 4(어드민)
-
-        부분 업데이트를 지원합니다.
-        """
         return self.update(request, *args, **kwargs, partial=True)
 
-    @decorators.methods_swagger_decorator
     def delete(self, request, *args, **kwargs):
-        """
-        단일 penalty를 제거
-
-        ---
-        RBAC - 4(어드민)
-        """
         return self.destroy(request, *args, **kwargs)
 
 
@@ -107,7 +83,7 @@ class PenaltyList(
     Penalty API
 
     ---
-    penalty를 등록
+    다수 penalty를 조회, 등록, 수정, 삭제하는 API를 제공합니다.
 
     * @author 이준혁(39기) bbbong9@gmail.com
     """
@@ -126,41 +102,14 @@ class PenaltyList(
             return PenaltyAddRequestSerializer
         return PenaltyResponseSerializer
 
-    @decorators.common_swagger_decorator
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-    @decorators.methods_swagger_decorator
     def post(self, request, *args, **kwargs):
-        """
-        penalty를 등록
-
-        ---
-        RBAC - 4(어드민)
-        """
         return self.create(request, *args, **kwargs)
 
-    @decorators.methods_swagger_decorator
     def put(self, request, *args, **kwargs):
-        """
-        다수 penalty를 업데이트
-
-        ---
-        RBAC - 4(어드민)
-
-        부분 업데이트를 지원합니다.
-        """
         return self.update(request, *args, **kwargs)
 
-    @decorators.methods_swagger_decorator
     def delete(self, request, *args, **kwargs):
-        """
-        다수 penalty를 제거
-
-        ---
-        RBAC - 4(어드민)
-        """
         return self.destroy(request, *args, **kwargs)
-
-
-PenaltyList.__doc__ = docs.get_penalty_doc()

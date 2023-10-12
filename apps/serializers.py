@@ -115,7 +115,7 @@ class PenaltyUpdateRequestSerializer(serializers.ModelSerializer):
 
     class Meta(AbstractPenaltyRequestSerializer.Meta):
         model = Penalty
-        fields = ["id", "reason", "type"]
+        fields = AbstractPenaltyRequestSerializer.Meta.fields + ["id", "reason", "type"]
         list_serializer_class = PenaltyBulkUpdateRequestSerializer
 
 
