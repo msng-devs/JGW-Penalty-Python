@@ -10,4 +10,4 @@ import logging
 class NoColorFormatter(logging.Formatter):
     def format(self, record):
         message = super().format(record)
-        return re.sub(r'\x1b\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]', '', message)
+        return re.sub(r"\x1b\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]", "", message)

@@ -23,5 +23,5 @@ from apps.common.views import ping
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("penalty/api/v1/", include("apps.penalty.urls")),
-    path("penalty/api/v1/ping/", ping)
+    path("penalty/api/v1/ping/", ping),
 ]

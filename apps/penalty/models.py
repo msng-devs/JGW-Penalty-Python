@@ -15,7 +15,10 @@ class Penalty(models.Model):
 
     # 해당 패널티가 부여된 Member(Object)
     target_member = models.ForeignKey(
-        Member, on_delete=models.CASCADE, related_name="penalty", db_column="MEMBER_MEMBER_PK"
+        Member,
+        on_delete=models.CASCADE,
+        related_name="penalty",
+        db_column="MEMBER_MEMBER_PK",
     )
 
     # 해당 패널티의 유형(false면 경고, true면 주의)
