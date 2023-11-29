@@ -126,7 +126,8 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
+            "()": "apps.utils.log.NoColorFormatter",
+            "format": "{levelname} [{asctime} {module}] {message}",
             "style": "{",
         },
         "simple": {
@@ -150,19 +151,14 @@ LOGGING = {
     "handlers": {
         "console": {
             "level": "INFO",
-            "filters": ["require_debug_true"],
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+            "filters": [],
         },
         "django.server": {
             "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "django.server",
-        },
-        "mail_admins": {
-            "level": "ERROR",
-            "filters": ["require_debug_false"],
-            "class": "django.utils.log.AdminEmailHandler",
         },
         "file": {
             "level": "INFO",
@@ -172,11 +168,12 @@ LOGGING = {
             "maxBytes": 1024 * 1024 * 5,  # 5 MB
             "backupCount": 5,
             "formatter": "verbose",
+            "filters": [],
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "mail_admins", "file"],
+            "handlers": ["console", "file"],
             "level": "INFO",
         },
         "django.server": {
