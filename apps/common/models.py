@@ -17,6 +17,11 @@ class Role(models.Model):
     # 해당 권한의 명칭("ROLE_" 시작하는 대문자)
     name = models.CharField(max_length=45, null=False, unique=True)
 
+    class Meta:
+        db_table = "ROLE"
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
+
 
 class Member(models.Model):
     # 해당 회원의 UID(Firebase uid) (PK)
@@ -34,5 +39,7 @@ class Member(models.Model):
     # 회원의 활동 상태
     status = models.BooleanField(default=True)
 
-    created_date = models.DateTimeField(default=timezone.now)
-    modified_date = models.DateTimeField(default=timezone.now)
+    class Meta:
+        db_table = "MEMBER"
+        verbose_name = "Member"
+        verbose_name_plural = "Members"

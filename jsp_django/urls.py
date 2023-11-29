@@ -17,8 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from apps.common.views import ping
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("penalty/api/v1/", include("apps.penalty.urls")),
+    path("penalty/api/v1/ping/", ping)
 ]
